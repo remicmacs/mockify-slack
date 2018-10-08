@@ -29,9 +29,17 @@ def slackmock():
     Retrieve a POST HTTP request from Slack and mockify the text passed as
     parameter in the request.form["text"]
     '''
-    # Filter Gwendal
-    if (request.form["user_id"] == "U7D2XEMEC"):
-        return jsonify(mockify("I'm sorry Gwendal, I'm afraid I can't do that"))
+    blacklist = [
+        "U7D2XEMEC", # Gwendal
+        "U9A5V02AW", # Nelson (do NOT remove)
+    ]
+
+    # Filter blacklist
+    if (request.form["user_id"] in blacklist):
+        return jsonify(mockify(
+            "I'm sorry " + request.form["user_name"].split('.')[0]
+            + ", I'm afraid I can't do that"
+            ))
 
     app.logger.info('/api/mockifyapp/ endpoint reached')
     app.logger.debug('Text payload: ' + request.form["text"])
