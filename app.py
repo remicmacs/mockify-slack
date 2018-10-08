@@ -23,7 +23,7 @@ def spongebobcase():
 
     return jsonify(mockify(s))
 
-@app.route("/api/mockifyapp/", methods=["GET","POST"])
+@app.route("/api/mockifyapp/", methods=["POST"])
 def slackmock():
     '''
     Retrieve a POST HTTP request from Slack and mockify the text passed as
