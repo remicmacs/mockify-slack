@@ -23,5 +23,8 @@ def spongebobcase():
 
     return jsonify(mockify(s))
 
-
-
+@app.route("/api/mockifyapp/", methods=["GET","POST"])
+def slackmock():
+    app.logger.info('/api/mockifyapp/ endpoint reached')
+    app.logger.debug('Text payload: ' + request.form["text"])
+    return jsonify(mockify(request.form["text"]))
