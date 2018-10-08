@@ -25,10 +25,25 @@ def spongebobcase():
 
 @app.route("/api/mockifyapp/", methods=["GET","POST"])
 def slackmock():
+    '''
+    Retrieve a POST HTTP request from Slack and mockify the text passed as
+    parameter in the request.form["text"]
+    '''
+    # Filter Gwendal
+    if (request.form["user_id"] == "U7D2XEMEC"):
+        return jsonify(mockify("I'm sorry Gwendal, I'm afraid I can't do that"))
+
     app.logger.info('/api/mockifyapp/ endpoint reached')
     app.logger.debug('Text payload: ' + request.form["text"])
-    req_payload = { "response_type": "in_channel","text": mockify(request.form["text"])}
+    app.logger.debug('User_id' + request.form["user_id"])
 
-    # Request for response URL : delayed response
+    # Forging request for delayed response
+    req_payload = {
+        "response_type": "in_channel",
+        "text": mockify(request.form["text"])
+    }
+    # Sending request to response_url sent by slack slash command
     requests.post(request.form["response_url"], json=req_payload)
+
+    # Return 200 status to HTTP request (ack)
     return ""
