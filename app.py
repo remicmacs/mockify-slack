@@ -27,4 +27,8 @@ def spongebobcase():
 def slackmock():
     app.logger.info('/api/mockifyapp/ endpoint reached')
     app.logger.debug('Text payload: ' + request.form["text"])
-    return jsonify(mockify(request.form["text"]))
+    req_payload = { "response_type": "in_channel","text": mockify(request.form["text"])}
+
+    # Request for response URL : delayed response
+    requests.post(request.form["response_url"], json=req_payload)
+    return ""
