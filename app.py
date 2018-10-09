@@ -28,9 +28,6 @@ def requires_access_rights(*blacklist):
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
-            app.logger.info("{}".format(get_current_user_id(request))
-                + "{}".format(st)
-            )
             if get_current_user_id(request) in blacklist:
                 return access_locked_response(request)
             return f(*args, **kwargs)
