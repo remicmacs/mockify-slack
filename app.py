@@ -6,12 +6,13 @@ from functools import wraps
 app = Flask(__name__)
 
 blacklist = [
-    "U7D2XEMEC", # Gwendal
+    # "U7D2XEMEC", # Gwendal
     "U9A5V02AW", # Nelson (do NOT remove)
     # "U7EG16H3R", # Vincent
     # "U7DNH2BUJ", # Rodolphe
-    "U7DDC77SP", # Rémi
+    # "U7DDC77SP", # Rémi
 ]
+
 
 def get_current_user_id(req):
     return req.form["user_id"]
@@ -23,11 +24,14 @@ def access_locked_response(req):
         )
     )
 
-def requires_access_rights(*access_rights):
+def requires_access_rights(*blacklist):
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
-            if get_current_user_id(request) not in access_rights:
+            app.logger.info("{}".format(get_current_user_id(request))
+                + "{}".format(st)
+            )
+            if get_current_user_id(request) in blacklist:
                 return access_locked_response(request)
             return f(*args, **kwargs)
         return wrapped
