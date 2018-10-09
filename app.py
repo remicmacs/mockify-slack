@@ -15,7 +15,7 @@ blacklist = [
 
 
 def get_current_user_id(req):
-    return req.form["user_id"]
+    return str(req.form["user_id"])
 
 def access_locked_response(req):
     return jsonify(mockify(
@@ -24,12 +24,29 @@ def access_locked_response(req):
         )
     )
 
-def requires_access_rights(*blacklist):
+def requires_access_rights(blacklist):
     def wrapper(f):
         @wraps(f)
         def wrapped(*args, **kwargs):
             if get_current_user_id(request) in blacklist:
                 return access_locked_response(request)
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
+
+def logs_users(logging=True):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if logging:
+                app.logger.info(
+                    "/api/mockifyapp/ endpoint reached by \""
+                    + "{:<25}".format(request.form["user_name"]) + "\", user_id: \""
+                    + "{:9}".format(request.form["user_id"]) + "\""
+                    + "; message: \"" + "{:<50}".format(request.form["text"]) + "\""
+                    + " ; in channel \"" + "{:<20}".format(request.form["channel_name"])
+                    + "\", channel_id: \"" + "{:9}".format(request.form["channel_id"]) + "\""
+                )
             return f(*args, **kwargs)
         return wrapped
     return wrapper
@@ -65,6 +82,7 @@ def spongebobcase():
     return jsonify(mockify(s))
 
 @app.route("/api/mockifyapp/", methods=["POST"])
+@logs_users()
 @requires_access_rights(blacklist)
 def slackmock():
     '''
@@ -72,7 +90,7 @@ def slackmock():
     parameter in the request.form["text"]
     '''
     # Logging incoming request
-    log(request)
+    # log(request)
 
     # Forging request for delayed response
     req_payload = {
@@ -93,3 +111,4 @@ def slack_mock_bot():
     app.logger.info("Challenge retrieved: ")
     app.logger.info(challenge)
     return jsonify({"challenge": request.form["challenge"]})
+
