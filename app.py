@@ -1,29 +1,37 @@
 import requests
 from flask import Flask, jsonify, request
 from mockify import mockify
-
+from functools import wraps
 
 app = Flask(__name__)
 
-def access_control(req):
-    blacklist = [
-        "U7D2XEMEC", # Gwendal
-        "U9A5V02AW", # Nelson (do NOT remove)
-        #"U7EG16H3R", # Vincent
-        "U7DNH2BUJ", # Rodolphe
-        # "U7DDC77SP", # Rémi
-    ]
+blacklist = [
+    "U7D2XEMEC", # Gwendal
+    "U9A5V02AW", # Nelson (do NOT remove)
+    # "U7EG16H3R", # Vincent
+    # "U7DNH2BUJ", # Rodolphe
+    "U7DDC77SP", # Rémi
+]
 
-    # Filter blacklist
-    if (req.form["user_id"] in blacklist):
-        app.logger.info("Is in blacklist")
-        return jsonify(mockify(
-            "I'm sorry " + request.form["user_name"].split('.')[0]
-            + ", I'm afraid I can't do that"
-            )
+def get_current_user_id(req):
+    return req.form["user_id"]
+
+def access_locked_response(req):
+    return jsonify(mockify(
+        "I'm sorry " + request.form["user_name"].split('.')[0]
+        + ", I'm afraid I can't do that"
         )
-    else:
-        return None
+    )
+
+def requires_access_rights(*access_rights):
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(*args, **kwargs):
+            if get_current_user_id(request) not in access_rights:
+                return access_locked_response(request)
+            return f(*args, **kwargs)
+        return wrapped
+    return wrapper
 
 def log(req):
     app.logger.info(
@@ -56,6 +64,7 @@ def spongebobcase():
     return jsonify(mockify(s))
 
 @app.route("/api/mockifyapp/", methods=["POST"])
+@requires_access_rights(blacklist)
 def slackmock():
     '''
     Retrieve a POST HTTP request from Slack and mockify the text passed as
@@ -63,10 +72,6 @@ def slackmock():
     '''
     # Logging incoming request
     log(request)
-
-    # Blacklisting
-    ctl = access_control(request)
-    if ctl is not None: return ctl
 
     # Forging request for delayed response
     req_payload = {
@@ -87,4 +92,3 @@ def slack_mock_bot():
     app.logger.info("Challenge retrieved: ")
     app.logger.info(challenge)
     return jsonify({"challenge": request.form["challenge"]})
-
