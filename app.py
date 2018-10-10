@@ -6,7 +6,7 @@ from functools import wraps
 app = Flask(__name__)
 
 blacklist = [
-    "U7D2XEMEC", # Gwendal
+    # "U7D2XEMEC", # Gwendal
     "U9A5V02AW", # Nelson (do NOT remove)
     # "U7EG16H3R", # Vincent
     # "U7DNH2BUJ", # Rodolphe
